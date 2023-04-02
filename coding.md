@@ -356,3 +356,169 @@ a();
 ```
 
 > Cannot access 'name' before initialization
+
+## Question. For which value of `x` the results of the following statements are not the same?
+
+
+```javascript
+if( x <= 100 ) {...}
+if( !(x > 100) ) {...}
+```
+<details><summary><b>Answer</b></summary>
+
+`NaN <= 100` is `false` and `NaN > 100` is also `false`, so if the
+value of `x` is `NaN`, the statements are not the same.
+
+The same holds true for any value of x that being converted to type Number, returns `NaN`, e.g.: `undefined`, `[1,2,5]`, `{a:22}` , etc.
+
+This is why you need to pay attention when you deal with numeric variables. `NaN` can’t be equal, less than or more than any other numeric value, so the only reliable way to check if the value is `NaN`, is to use the `isNaN()` function.
+
+</details>
+
+## Existence and Boolean
+
+```jsx
+undefined, null, '', 0 is false
+Boolean(0) is false Boolean('0') is true
+```
+
+## function statement and function expression
+
+```jsx
+//function statement
+function greet() {
+  console.log('hi');
+}
+
+//function expression
+anonymousGreet(); // Uncaught TypeError: undefined is not a function,
+                  // because function expressions are not hoisted.
+
+var anonymousGreet = function(){
+  console.log('hi');
+}
+```
+
+## Call by values, references
+
+```jsx
+// by value (primitives)
+var a = 3;
+var b;
+
+b = a;
+a = 2;
+
+console.log(a); // 2
+console.log(b); // 3
+
+// by reference (all objects (including functions))
+var c = { greeting: 'hi' };
+var d;
+
+d = c;
+c.greeting = 'hello'; // mutate
+
+console.log(c); // hello
+console.log(d); // hello
+
+// by reference (even as parameters)
+function changeGreeting(obj) {
+    obj.greeting = 'Hola'; // mutate   
+}
+
+changeGreeting(d);
+console.log(c); // Hola
+console.log(d); // Hola
+
+// equals operator sets up new memory space (new address)
+c = { greeting: 'howdy' };
+console.log(c); // Howdy
+console.log(d); // Hola
+```
+## this
+
+```jsx
+console.log(this); //Global Execution Context : Window Object
+
+function a(){
+  console.log(this); //also Window Object
+}
+
+var b = function() {
+  console.log(this); //also Window Object
+};
+a();
+
+var c = {
+  name: 'The c object',
+  log: function() {
+    var self = this; //this can cover whole project
+
+    this.name = 'Updated c object';
+    console.log(this); //c object
+
+    var setname = function(newname) {
+      this.name = newname; //Window.name has been created (!?) internal function of object
+    }
+    setname('Updated again! the c object');
+  }
+};
+
+c.log();
+```
+
+## Automatic Semicolon Insertion
+
+```jsx
+function getPerson() {
+  return 
+  {
+    firstname: 'Tony'
+  }
+}
+
+console.log(getPerson()); //undefined because 'return;', watch out!
+```
+
+## Closure
+
+```jsx
+function buildFunctions() {
+  var arr = [];
+  for(var i = 0; i < 3; i++) {
+    arr.push(function() {
+      console.log(i);
+    });
+  }
+  return arr;
+}
+
+var fs = buildFunctions();
+fs[0](); //3
+fs[1](); //3
+fs[2](); //3
+```
+This is a common JavaScript behavior known as closure. When the i variable is used inside the anonymous function, the value of i is captured at the time of function creation. Therefore, even after i has been incremented, the anonymous function still refers to its initial value of i. To avoid this, you can use an Immediately Invoked Function Expression (IIFE) that captures the current value of i.
+
+```jsx
+function buildFunctions() {
+  var arr = [];
+  for(var i = 0; i < 3; i++) {
+    //let j = i; es6 way
+    arr.push(
+      (function(j) {
+        return function() {
+          console.log(j);
+        }
+      })(i);
+    );
+  }
+  return arr;
+}
+
+var fs = buildFunctions();
+fs[0](); //1
+fs[1](); //2
+fs[2](); //3
+```
